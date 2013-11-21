@@ -1,0 +1,82 @@
+0000000000000000 <.data>:
+   0:	eb 30                	jmp    0x32           # GOTO MAIN
+   2:	67 6c                	addr32 insb (%dx),%es:(%edi)
+   4:	20 68 66             	and    %ch,0x66(%bx,%si)
+   7:	0d 0a 23             	or     $0x230a,%ax
+   a:	20 00                	and    %al,(%bx,%si)
+   c:	08 20                	or     %ah,(%bx,%si)
+   e:	08 00                	or     %al,(%bx,%si)
+  10:	0d 0a 57             	or     $0x570a,%ax
+  13:	69 6e 21 00 0d       	imul   $0xd00,0x21(%bp),%bp
+  18:	0a 4c 6f             	or     0x6f(%si),%cl
+  1b:	73 65                	jae    0x82
+  1d:	21 00                	and    %ax,(%bx,%si)
+  1f:	ac                   	lods   %ds:(%si),%al  # FUNCTION PRINTSTR ;al =  ds[si]
+  20:	3c 00                	cmp    $0x0,%al       # if al == 0
+  22:	74 05                	je     0x29           # return
+  24:	e8 03 00             	call   0x2a           # else call PRINTCH
+  27:	eb f6                	jmp    0x1f           # loop
+  29:	c3                   	ret        
+  2a:	b4 0e                	mov    $0xe,%ah      # FUNCTION PRINTCH(al)
+  2c:	bb 11 00             	mov    $0x11,%bx     #
+  2f:	cd 10                	int    $0x10         # print al
+  31:	c3                   	ret    
+  32:	31 c0                	xor    %ax,%ax        # MAIN: ax = 0
+  34:	8e d8                	mov    %ax,%ds        # ds = ax
+  36:	8e c0                	mov    %ax,%es        # es = ax
+  38:	be 02 7c             	mov    $0x7c02,%siA   # siA = 0x7c02
+  3b:	e8 e1 ff             	call   0x1f           # call 0x1f
+  3e:	bd 00 7e             	mov    $0x7e00,%bp    # bp = 0x7e00
+  41:	c6 46 00 00          	movb   $0x0,0x0(%bp)  # bp[..] = 0x00
+  45:	45                   	inc    %bp            # bp++
+  46:	81 fd 00 80          	cmp    $0x8000,%bp    # if bp < 0x8000
+  4a:	72 f5                	jb     0x41           #  goto 0x41
+  4c:	bf 00 7e             	mov    $0x7e00,%di    # di = 0x7e00
+  4f:	31 c9                	xor    %cx,%cx        # cx = 0
+  51:	b4 00                	mov    $0x0,%ah       # READCHAR: ah = 0
+  53:	cd 16                	int    $0x16          # al = readc()
+  55:	3c 0d                	cmp    $0xd,%al       # if al = ENTER
+  57:	74 1c                	je     0x75           # goto ENTER
+  59:	3c 08                	cmp    $0x8,%al       # if al = BACKSPACE
+  5b:	74 07                	je     0x64           # goto BACKSPACE
+  5d:	aa                   	stos   %al,%es:(%di)  # es[di] = al
+  5e:	e8 c9 ff             	call   0x2a           # print(al)
+  61:	41                   	inc    %cx            # cx++
+  62:	eb ed                	jmp    0x51           # goto READCHAR
+  64:	85 c9                	test   %cx,%cx        #  BACKSPACE: if cx == 0
+  66:	74 e9                	je     0x51           #      goto READCHAR
+  68:	be 0c 7c             	mov    $0x7c0c,%si    # si = 7c0c
+  6b:	e8 b1 ff             	call   0x1f           #  call printstr
+  6e:	4f                   	dec    %di            # di --
+  6f:	c6 05 00             	movb   $0x0,(%di)     # di[..] = 0
+  72:	49                   	dec    %cx            # cx --
+  73:	eb dc                	jmp    0x51           # goto READCHAR
+  75:	66 a1 00 7e          	mov    0x7e00,%eax     # ENTER: eax = [first 4 chars of input]
+  79:	66 8b 1e 04 7e       	mov    0x7e04,%ebx     # ebx = [next 4 chars of input]
+  7e:	66 8b 0e 08 7e       	mov    0x7e08,%ecx     # ecx = [next 4 chars of input]
+  83:	66 ba 42 33 74 73    	mov    $0x73743342,%edx  # edx = 0x73743342 (edx = st3B)
+  89:	b2 4c                	mov    $0x4c,%dl       # dl = 0x4c          (edx = st3L)
+  8b:	66 39 d0             	cmp    %edx,%eax       # if eax != edx
+  8e:	75 24                	jne    0xb4            #  goto LOSE
+  90:	66 c1 c2 08          	rol    $0x8,%edx       # edx <<= 0x8        (edx = t3L0)
+  94:	ba 5f 47             	mov    $0x475f,%dx     # dx = 0x475f        (edx = t3G_)
+  97:	66 39 d3             	cmp    %edx,%ebx       # if edx != ebx
+  9a:	75 18                	jne    0xb4            #   goto LOSE
+  9c:	b6 57                	mov    $0x57,%dh       # dh = 0x57A         (edx = t3W_)
+  9e:	66 39 d1             	cmp    %edx,%ecx       # if edx != ecx
+  a1:	75 11                	jne    0xb4            #  goto LOSE
+  a3:	a0 0c 7e             	mov    0x7e0c,%al      # al = mem[0x7e0c]
+  a6:	30 db                	xor    %bl,%bl         # bl = 0
+  a8:	38 d8                	cmp    %bl,%al         # if bl == al
+  aa:	75 08                	jne    0xb4            #   goto 0xb4
+  ac:	be 10 7c             	mov    $0x7c10,%si     # WIN: si = 0x7c10
+  af:	e8 6d ff             	call   0x1f            #  call printstr
+  b2:	eb 06                	jmp    0xba            # HALT
+
+  b4:	be 17 7c             	mov    $0x7c17,%si    # LOSE: si=0x7c17
+  b7:	e8 65 ff             	call   0x1f           # call printstr
+  ba:	eb fe                	jmp    0xba           # HALT
+	...
+ 1fc:	00 00                	add    %al,(%bx,%si)
+ 1fe:	55                   	push   %bp
+ 1ff:	aa                   	stos   %al,%es:(%di)
