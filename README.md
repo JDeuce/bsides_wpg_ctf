@@ -63,7 +63,7 @@ $ objdump -D -b binary -mi386 -Maddr16,data16 bootliquor.img > dump.txt
 I then proceeded to analyze the assembly to figure out which string
 would make the program output "Win".
 
-I've added my disassembly with some helpful commands to in [dump.txt](bootliqour/dump.txt)
+I've added my disassembly with some helpful commands to in [dump.txt](bootliquor/dump.txt)
 
 
 cosmo
